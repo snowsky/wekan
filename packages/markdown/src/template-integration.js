@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import { getSecureDOMPurifyConfig } from '/client/lib/secureDOMPurify';
 
 var Markdown = require('markdown-it')({
   html: true,

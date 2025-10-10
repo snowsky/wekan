@@ -12,6 +12,8 @@ import CardComments from '/models/cardComments';
 import { ALLOWED_COLORS } from '/config/const';
 import { UserAvatar } from '../users/userAvatar';
 import { DialogWithBoardSwimlaneList } from '/client/lib/dialogWithBoardSwimlaneList';
+import { handleFileUpload } from './attachments';
+import uploadProgressManager from '../../lib/uploadProgressManager';
 
 const subManager = new SubsManager();
 const { calculateIndexData } = Utils;

@@ -1,6 +1,8 @@
 import { ReactiveCache } from '/imports/reactiveCache';
 import { TAPi18n } from '/imports/i18n';
-import { CustomFieldStringTemplate } from '/client/lib/customFields'
+import { CustomFieldStringTemplate } from '/client/lib/customFields';
+import { handleFileUpload } from './attachments';
+import uploadProgressManager from '../../lib/uploadProgressManager';
 
 // Template.cards.events({
 //   'click .member': Popup.open('cardMember')

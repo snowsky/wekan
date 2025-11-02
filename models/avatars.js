@@ -43,7 +43,7 @@ if (Meteor.isServer) {
   storagePath = path.join(process.env.WRITABLE_PATH, 'avatars');
 }
 
-const fileStoreStrategyFactory = new FileStoreStrategyFactory(FileStoreStrategyFilesystem, storagePath, FileStoreStrategyGridFs, avatarsBucket);
+export const fileStoreStrategyFactory = new FileStoreStrategyFactory(FileStoreStrategyFilesystem, storagePath, FileStoreStrategyGridFs, avatarsBucket);
 
 Avatars = new FilesCollection({
   debug: false, // Change to `true` for debugging

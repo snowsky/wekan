@@ -34,3 +34,6 @@ ehthumbs.db
 .devcontainer/docker-compose.extend.yml
 .devcontainer/volumes*/
 .git
+!.build/
+!.build/bundle/
+!.build/bundle/**

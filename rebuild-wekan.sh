@@ -135,7 +135,11 @@ do
 		(cd .build/bundle/programs/server && rm -rf node_modules && chmod u+w *.json && meteor npm install --production)
 		#(cd .build/bundle/programs/server/node_modules/fibers && node build.js)
 		(cd .build/bundle/programs/server && npm install fibers --save-dev)
-		(cd .build/bundle/programs/server/npm/node_modules/meteor/accounts-password && meteor npm remove bcrypt && meteor npm install bcrypt --production)
+		if [ -d .build/bundle/programs/server/npm/node_modules/meteor/accounts-password ]; then
+			(cd .build/bundle/programs/server/npm/node_modules/meteor/accounts-password && meteor npm remove bcrypt && meteor npm install bcrypt --production)
+		else
+			echo "Skipping accounts-password bcrypt rebuild; bundle path does not exist."
+		fi
 		# Cleanup
 		cd .build/bundle
 		find . -type d -name '*-garbage*' | xargs rm -rf

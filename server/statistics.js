@@ -39,7 +39,7 @@ if (Meteor.isServer) {
         // Not shown at Sandstorm WeKan, because there's a bunch of machine performance data
         // Sandstorm doesn't expose to apps to prevent side channel attacks.
         if (!isSandstorm) {
-          const v8 = require('v8'); // Import the v8 module
+          const v8 = Npm.require('v8');
           statistics.nodeHeapStats = {
             totalHeapSize: v8.getHeapStatistics().total_heap_size,
             totalHeapSizeExecutable: v8.getHeapStatistics().total_heap_size_executable,

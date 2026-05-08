@@ -4,7 +4,14 @@ import { createObjectId } from './grid/createObjectId';
 import { httpStreamOutput } from './httpStream.js';
 //import {} from './s3/Server-side-file-store.js';
 import { ObjectID } from 'bson';
-var Minio = require('minio');
+let Minio;
+
+function getMinio() {
+  if (!Minio && Meteor.isServer) {
+    Minio = Npm.require('minio');
+  }
+  return Minio;
+}
 
 export const STORAGE_NAME_FILESYSTEM = "fs";
 export const STORAGE_NAME_GRIDFS     = "gridfs";
@@ -370,7 +377,7 @@ export class FileStoreStrategyS3 extends FileStoreStrategy {
 
     if (s3Conf && s3Conf.key && s3Conf.secret && s3Conf.bucket && s3Conf.endPoint && s3Conf.port && s3Conf.sslEnabled) {
       // Create a new S3 object
-      var s3Client = new Minio.Client({
+      var s3Client = new (getMinio().Client)({
         endPoint: s3Conf.endPoint,
         port: s3Conf.port,
         useSSL: s3Conf.sslEnabled,
@@ -527,7 +534,7 @@ export class FileStoreStrategyS3 extends FileStoreStrategy {
 
     if (s3Conf && s3Conf.key && s3Conf.secret && s3Conf.bucket && s3Conf.endPoint && s3Conf.port && s3Conf.sslEnabled) {
       // Create a new S3 object
-      var s3Client = new Minio.Client({
+      var s3Client = new (getMinio().Client)({
         endPoint: s3Conf.endPoint,
         port: s3Conf.port,
         useSSL: s3Conf.sslEnabled,

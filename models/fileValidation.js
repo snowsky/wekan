@@ -1,12 +1,12 @@
 import { Meteor } from 'meteor/meteor';
-import { exec } from 'node:child_process';
-import { promisify } from 'node:util';
-import fs from 'fs';
-import FileType from 'file-type';
 
 let asyncExec;
+let fs;
+let FileType;
 
 if (Meteor.isServer) {
+  const { exec } = Npm.require('child_process');
+  const { promisify } = Npm.require('util');
   asyncExec = promisify(exec);
 }
 

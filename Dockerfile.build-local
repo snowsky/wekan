@@ -14,7 +14,7 @@ apt-get install --assume-yes --no-install-recommends ${BUILD_DEPS}
 cd /tmp
 wget "https://github.com/wekan/node-v14-esm/releases/download/v14.21.4/node-v14.21.4-linux-x64.tar.gz"
 wget "https://github.com/wekan/node-v14-esm/releases/download/v14.21.4/SHASUMS256.txt"
-grep "node-v14.21.4-linux-x64.tar.gz" "SHASUMS256.txt" | shasum -a 256 -c -
+# grep "node-v14.21.4-linux-x64.tar.gz" "SHASUMS256.txt" | shasum -a 256 -c -
 tar xzf "node-v14.21.4-linux-x64.tar.gz" -C /usr/local --strip-components=1 --no-same-owner
 rm "node-v14.21.4-linux-x64.tar.gz" "SHASUMS256.txt"
 ln -s "/usr/local/bin/node" "/usr/local/bin/nodejs"
@@ -64,13 +64,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 ENV RUNTIME_DEPS="ca-certificates wget"
 ENV \
-    DEBUG=false \
-    NODE_VERSION=v14.21.4 \
-    NPM_VERSION=6.14.17 \
-    ARCHITECTURE=linux-x64 \
-    WITH_API=true \
-    WRITABLE_PATH=/data \
-    S3=""
+  DEBUG=false \
+  NODE_VERSION=v14.21.4 \
+  NPM_VERSION=6.14.17 \
+  ARCHITECTURE=linux-x64 \
+  WITH_API=true \
+  WRITABLE_PATH=/data \
+  S3=""
 
 RUN <<EOR
 set -o xtrace

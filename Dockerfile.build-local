@@ -3,48 +3,52 @@ FROM ubuntu:24.04 AS builder
 ARG DEBIAN_FRONTEND=noninteractive
 
 ENV BUILD_DEPS="apt-utils gnupg gosu wget bzip2 g++ curl libarchive-tools build-essential git ca-certificates python3 p7zip-full zip unzip unp"
-ENV METEOR_ALLOW_SUPERUSER=true
-ENV PATH="/root/.meteor:/usr/local/bin:${PATH}"
+ENV PATH="/home/wekan/.meteor:/home/wekan/.npm-global/bin:/usr/local/bin:${PATH}"
 
 RUN <<EOR
 set -o xtrace
 apt-get update --assume-yes
 apt-get install --assume-yes --no-install-recommends ${BUILD_DEPS}
+useradd --user-group --system --create-home --home-dir /home/wekan wekan
+mkdir -p /home/wekan/.npm-global
+chown --recursive wekan:wekan /home/wekan
 
 cd /tmp
 wget "https://github.com/wekan/node-v14-esm/releases/download/v14.21.4/node-v14.21.4-linux-x64.tar.gz"
 wget "https://github.com/wekan/node-v14-esm/releases/download/v14.21.4/SHASUMS256.txt"
-# grep "node-v14.21.4-linux-x64.tar.gz" "SHASUMS256.txt" | shasum -a 256 -c -
+grep "node-v14.21.4-linux-x64.tar.gz" "SHASUMS256.txt" | sha256sum -c -
 tar xzf "node-v14.21.4-linux-x64.tar.gz" -C /usr/local --strip-components=1 --no-same-owner
 rm "node-v14.21.4-linux-x64.tar.gz" "SHASUMS256.txt"
 ln -s "/usr/local/bin/node" "/usr/local/bin/nodejs"
 
 npm install -g npm@6.14.17 --production
-npm install -g @mapbox/node-pre-gyp node-gyp meteor@2.14 --unsafe-perm
+gosu wekan npm config set prefix /home/wekan/.npm-global
+gosu wekan npm install -g @mapbox/node-pre-gyp node-gyp meteor@2.14 --unsafe-perm
 node --version
 npm --version
-meteor --version
+gosu wekan meteor --version
 EOR
 
 WORKDIR /home/wekan/app
-COPY . .
+COPY --chown=wekan:wekan . .
 
 RUN <<EOR
 set -o xtrace
+rm -rf .git
 rm -rf .build/bundle node_modules .meteor/local .build
-meteor npm install --production
-meteor build .build --directory --platforms=web.browser
+gosu wekan meteor npm install --production
+gosu wekan meteor build .build --directory --platforms=web.browser
 rm -rf .build/bundle/programs/web.browser.legacy
 
 cd .build/bundle/programs/server
 rm -rf node_modules
 chmod u+w *.json
-meteor npm install --production
-npm install fibers --save-dev
+gosu wekan meteor npm install --production
+gosu wekan npm install fibers --save-dev
 if [ -d npm/node_modules/meteor/accounts-password ]; then
   cd npm/node_modules/meteor/accounts-password
-  meteor npm remove bcrypt
-  meteor npm install bcrypt --production
+  gosu wekan meteor npm remove bcrypt
+  gosu wekan meteor npm install bcrypt --production
 fi
 
 cd /home/wekan/app/.build/bundle
@@ -81,7 +85,7 @@ apt-get install --assume-yes --no-install-recommends ${RUNTIME_DEPS}
 cd /tmp
 wget "https://github.com/wekan/node-v14-esm/releases/download/v14.21.4/node-v14.21.4-linux-x64.tar.gz"
 wget "https://github.com/wekan/node-v14-esm/releases/download/v14.21.4/SHASUMS256.txt"
-grep "node-v14.21.4-linux-x64.tar.gz" "SHASUMS256.txt" | shasum -a 256 -c -
+grep "node-v14.21.4-linux-x64.tar.gz" "SHASUMS256.txt" | sha256sum -c -
 tar xzf "node-v14.21.4-linux-x64.tar.gz" -C /usr/local --strip-components=1 --no-same-owner
 rm "node-v14.21.4-linux-x64.tar.gz" "SHASUMS256.txt"
 ln -s "/usr/local/bin/node" "/usr/local/bin/nodejs"

@@ -45,9 +45,11 @@ cd /build/programs/server
 chmod u+w *.json
 npm install --production
 npm install fibers --save-dev
-cd /build/programs/server/npm/node_modules/meteor/accounts-password
-npm remove bcrypt
-npm install bcrypt --production
+if [ -d /build/programs/server/npm/node_modules/meteor/accounts-password ]; then
+  cd /build/programs/server/npm/node_modules/meteor/accounts-password
+  npm remove bcrypt
+  npm install bcrypt --production
+fi
 
 apt-get remove --purge --assume-yes ${BUILD_DEPS}
 apt-get autoremove --assume-yes

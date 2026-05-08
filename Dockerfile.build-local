@@ -34,6 +34,7 @@ COPY --chown=wekan:wekan . .
 
 RUN <<EOR
 set -eux
+chown --recursive wekan:wekan /home/wekan/app
 rm -rf .git
 rm -rf .build/bundle node_modules .meteor/local .build
 gosu wekan meteor npm install --production

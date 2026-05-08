@@ -8,8 +8,17 @@ import {
 } from '../config/const';
 import Attachments, { fileStoreStrategyFactory } from "./attachments";
 import { copyFile } from './lib/fileStoreStrategy.js';
+import { sanitizeText } from '/imports/lib/secureDOMPurify';
 
 Cards = new Mongo.Collection('cards');
+
+function sanitizeCardTitle(title) {
+  if (typeof title !== 'string') {
+    return title;
+  }
+
+  return sanitizeText(title);
+}
 
 // XXX To improve pub/sub performances a card document should include a
 // de-normalized number of comments so we don't have to publish the whole list
@@ -1706,19 +1715,19 @@ Cards.helpers({
       if (card === undefined) {
         return null;
       } else {
-        return card.title;
+        return sanitizeCardTitle(card.title);
       }
     } else if (this.isLinkedBoard()) {
       const board = ReactiveCache.getBoard(this.linkedId);
       if (board === undefined) {
         return null;
       } else {
-        return board.title;
+        return sanitizeCardTitle(board.title);
       }
     } else if (this.title === undefined) {
       return null;
     } else {
-      return this.title;
+      return sanitizeCardTitle(this.title);
     }
   },
 
@@ -2967,7 +2976,7 @@ Meteor.methods({
     check(dueDate, Date);
     check(swimlaneId, String);
     const card = {
-      title,
+      title: sanitizeCardTitle(title),
       listId,
       boardId,
       swimlaneId,
@@ -3076,6 +3085,18 @@ const addCronJob = _.debounce(
 );
 
 if (Meteor.isServer) {
+  Cards.before.insert((userId, doc) => {
+    if (typeof doc.title === 'string') {
+      doc.title = sanitizeCardTitle(doc.title);
+    }
+  });
+
+  Cards.before.update((userId, doc, fieldNames, modifier) => {
+    if (modifier && modifier.$set && typeof modifier.$set.title === 'string') {
+      modifier.$set.title = sanitizeCardTitle(modifier.$set.title);
+    }
+  });
+
   Meteor.methods({
     /** copies a card
      * <li> this method is needed on the server because attachments can only be copied on the server (access to file system)
@@ -3412,7 +3433,7 @@ if (Meteor.isServer) {
     const assignees = req.body.assignees;
     if (typeof check !== 'undefined') {
       const id = Cards.direct.insert({
-        title: req.body.title,
+        title: sanitizeCardTitle(req.body.title),
         boardId: paramBoardId,
         listId: paramListId,
         parentId: paramParentId,

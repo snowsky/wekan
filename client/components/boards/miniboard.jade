@@ -5,4 +5,4 @@ template(name="miniboard")
       .handle
         .fa.fa-arrows
       +viewer
-        = title
+        | {{sanitizePlainText title}}

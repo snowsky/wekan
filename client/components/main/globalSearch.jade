@@ -83,7 +83,7 @@ template(name="globalSearch")
             .lists-wrapper
               each title in myBoardNames.get
                 span.card-label.list-title.js-board-title
-                  = title
+                  | {{sanitizePlainText title}}
             h2 {{_ 'lists' }}
             .lists-wrapper
               each title in myLists.get

@@ -16,13 +16,13 @@ template(name="header")
               li(class="{{#if $.Session.equals 'currentList' _id}}current{{/if}}")
                 a.js-select-list
                   +viewer
-                    = title
+                    | {{sanitizePlainText title}}
           else
             each currentUser.starredBoards
               li(class="{{#if $.Session.equals 'currentBoard' _id}}current{{/if}}")
                 a(href="{{pathFor 'board' id=_id slug=slug}}")
                   +viewer
-                    = title
+                    | {{sanitizePlainText title}}
         a.js-toggle-desktop-drag-handles(title="{{_ 'show-desktop-drag-handles'}}" alt="{{_ 'show-desktop-drag-handles'}}")
           i.fa.fa-arrows
             if isShowDesktopDragHandles
@@ -58,7 +58,7 @@ template(name="header")
             li(class="{{#if $.Session.equals 'currentBoard' _id}}current{{/if}}")
               a(href="{{pathFor 'board' id=_id slug=slug}}")
                 +viewer
-                  = title
+                  | {{sanitizePlainText title}}
           else
             li.current.empty {{_ 'quick-access-description'}}
         a.js-toggle-desktop-drag-handles(title="{{_ 'show-desktop-drag-handles'}}" alt="{{_ 'show-desktop-drag-handles'}}")

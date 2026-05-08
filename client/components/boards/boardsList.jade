@@ -38,7 +38,7 @@ template(name="boardList")
           if isInvited
             .board-list-item
               span.details
-                span.board-list-item-name= title
+                span.board-list-item-name {{sanitizePlainText title}}
                 i.fa.js-star-board(
                   class="fa-star{{#if isStarred}} is-star-active{{else}}-o{{/if}}"
                   title="{{_ 'star-board-title'}}")
@@ -51,7 +51,7 @@ template(name="boardList")
                 span.details
                   span.board-list-item-name(title="{{_ 'template-container'}}")
                     +viewer
-                      = title
+                      | {{sanitizePlainText title}}
                   i.fa.js-star-board(
                     class="fa-star{{#if isStarred}} is-star-active{{else}}-o{{/if}}"
                     title="{{_ 'star-board-title'}}")
@@ -93,7 +93,7 @@ template(name="boardList")
                 span.details
                   span.board-list-item-name(title="{{_ 'board-drag-drop-reorder-or-click-open'}}")
                     +viewer
-                      = title
+                      | {{sanitizePlainText title}}
                   unless currentSetting.hideBoardMemberList
                     if allowsBoardMemberList
                       .minicard-members

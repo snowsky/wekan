@@ -34,7 +34,7 @@ template(name="myCards")
               .my-cards-board-title(class=board.colorClass, id="header")
                 a(href=board.originRelativeUrl)
                   +viewer
-                    = board.title
+                    | {{sanitizePlainText board.title}}
               each swimlane in board.mySwimlanes
                 .my-cards-swimlane-title(class="{{#if swimlane.colorClass}}{{ swimlane.colorClass }}{{else}}swimlane-default-color{{/if}}")
                   +viewer
@@ -76,7 +76,7 @@ template(name="myCards")
                               td
                                 | {{list.title}}
                               td
-                                | {{board.title}}
+                                | {{sanitizePlainText board.title}}
                                 //a(href=board.originRelativeUrl)
                               td
                                 | {{swimlane.title}}

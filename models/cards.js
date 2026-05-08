@@ -1745,21 +1745,21 @@ Cards.helpers({
       if (board === undefined) {
         return null;
       } else {
-        return board.title;
+        return sanitizeCardTitle(board.title);
       }
     } else if (this.isLinkedBoard()) {
       const board = ReactiveCache.getBoard(this.linkedId);
       if (board === undefined) {
         return null;
       } else {
-        return board.title;
+        return sanitizeCardTitle(board.title);
       }
     } else {
       const board = ReactiveCache.getBoard(this.boardId);
       if (board === undefined) {
         return null;
       } else {
-        return board.title;
+        return sanitizeCardTitle(board.title);
       }
     }
   },

@@ -327,7 +327,7 @@ BlazeComponent.extendComponent({
 }).register('editor');
 
 import DOMPurify from 'dompurify';
-import { sanitizeHTML } from '/imports/lib/secureDOMPurify';
+import { sanitizeHTML, sanitizeText } from '/imports/lib/secureDOMPurify';
 
 // Additional  safeAttrValue function to allow for other specific protocols
 // See https://github.com/leizongmin/js-xss/issues/52#issuecomment-241354114
@@ -421,6 +421,10 @@ Blaze.Template.registerHelper(
     return HTML.Raw(sanitizeHTML(content));
   }),
 );
+
+Blaze.Template.registerHelper('sanitizePlainText', function(text) {
+  return sanitizeText(text);
+});
 
 Template.viewer.events({
   // Viewer sometimes have click-able wrapper around them (for instance to edit

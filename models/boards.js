@@ -9,10 +9,19 @@ import {
   TYPE_TEMPLATE_CONTAINER,
 } from '/config/const';
 import Users from "./users";
+import { sanitizeText } from '/imports/lib/secureDOMPurify';
 
 // const escapeForRegex = require('escape-string-regexp');
 
 Boards = new Mongo.Collection('boards');
+
+function sanitizeBoardTitle(title) {
+  if (typeof title !== 'string') {
+    return title;
+  }
+
+  return sanitizeText(title);
+}
 
 /**
  * This is a Board.
@@ -1291,7 +1300,7 @@ Boards.mutations({
   },
 
   rename(title) {
-    return { $set: { title } };
+    return { $set: { title: sanitizeBoardTitle(title) } };
   },
 
   setDescription(description) {
@@ -1819,6 +1828,10 @@ if (Meteor.isServer) {
 
 // Insert new board at last position in sort order.
 Boards.before.insert((userId, doc) => {
+  if (typeof doc.title === 'string') {
+    doc.title = sanitizeBoardTitle(doc.title);
+  }
+
   const lastBoard = ReactiveCache.getBoard(
     { sort: { $exists: true } },
     { sort: { sort: -1 } },
@@ -1829,6 +1842,12 @@ Boards.before.insert((userId, doc) => {
 });
 
 if (Meteor.isServer) {
+  Boards.before.update((userId, doc, fieldNames, modifier) => {
+    if (modifier && modifier.$set && typeof modifier.$set.title === 'string') {
+      modifier.$set.title = sanitizeBoardTitle(modifier.$set.title);
+    }
+  });
+
   // Let MongoDB ensure that a member is not included twice in the same board
   Meteor.startup(() => {
     Boards._collection.createIndex({ modifiedAt: -1 });
@@ -2149,7 +2168,7 @@ if (Meteor.isServer) {
     try {
       Authentication.checkLoggedIn(req.userId);
       const id = Boards.insert({
-        title: req.body.title,
+        title: sanitizeBoardTitle(req.body.title),
         members: [
           {
             userId: req.body.owner,
@@ -2218,7 +2237,7 @@ if (Meteor.isServer) {
     try {
       Authentication.checkUserId(req.userId);
       const boardId = req.params.boardId;
-      const title = req.body.title;
+      const title = sanitizeBoardTitle(req.body.title);
 
       Boards.direct.update({ _id: boardId }, { $set: { title } });
 
@@ -2299,7 +2318,7 @@ JsonRoutes.add('POST', '/api/boards/:boardId/copy', function(req, res) {
   const adminAccess = board.members.some(e => e.userId === req.userId && e.isAdmin);
   Authentication.checkAdminOrCondition(req.userId, adminAccess);
   try {
-    board['title'] = req.body.title || Boards.uniqueTitle(board.title);
+    board['title'] = sanitizeBoardTitle(req.body.title || Boards.uniqueTitle(board.title));
     ret = board.copy();
     JsonRoutes.sendResult(res, {
       code: 200,

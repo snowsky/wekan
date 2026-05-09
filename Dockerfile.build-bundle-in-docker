@@ -10,8 +10,8 @@ set -eux
 apt-get update --assume-yes
 apt-get install --assume-yes --no-install-recommends ${BUILD_DEPS}
 useradd --user-group --system --create-home --home-dir /home/wekan wekan
-mkdir -p /home/wekan/.npm-global
-chown --recursive wekan:wekan /home/wekan
+mkdir -p /home/wekan/.npm-global /home/wekan/app
+chown wekan:wekan /home/wekan /home/wekan/.npm-global /home/wekan/app
 
 cd /tmp
 wget "https://github.com/wekan/node-v14-esm/releases/download/v14.21.4/node-v14.21.4-linux-x64.tar.gz"

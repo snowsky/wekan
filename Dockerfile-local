@@ -214,14 +214,16 @@ mv $(which tar)~ $(which tar)
 
 # Cleanup
 apt-get remove --purge --assume-yes ${BUILD_DEPS}
+npm uninstall -g npm
 apt-get autoremove --assume-yes
 apt-get clean --assume-yes
 rm -Rf /tmp/*
 rm -Rf /var/lib/apt/lists/*
 rm -Rf /home/wekan/app
+rm -Rf /usr/share/doc /usr/share/man /usr/share/locale
 
 mkdir -p /data
-chown wekan:wekan --recursive /data
+chown wekan:wekan /data
 EOR
 
 USER wekan

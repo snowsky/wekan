@@ -58,7 +58,6 @@ find . -type d -name '*-garbage*' -prune -exec rm -rf {} +
 find . -name '*phantom*' -exec rm -rf {} +
 find . -name '.*.swp' -exec rm -f {} +
 find . -name '*.swp' -exec rm -f {} +
-find . -name '*.map' -exec rm -f {} +
 find . -name 'test' -type d -exec rm -rf {} +
 find . -name 'tests' -type d -exec rm -rf {} +
 find . -name 'spec' -type d -exec rm -rf {} +

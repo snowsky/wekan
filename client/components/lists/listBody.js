@@ -355,9 +355,13 @@ BlazeComponent.extendComponent({
           match: /\B@([\w.-]*)$/,
           search(term, callback) {
             const currentBoard = Utils.getCurrentBoard();
+            const activeMembers = currentBoard ? currentBoard.activeMembers() : [];
             callback(
-              $.map(currentBoard.activeMembers(), member => {
+              $.map(activeMembers, member => {
                 const user = ReactiveCache.getUser(member.userId);
+                if (!user || !user.username) {
+                  return null;
+                }
                 return user.username.indexOf(term) === 0 ? user : null;
               }),
             );

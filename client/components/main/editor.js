@@ -45,12 +45,15 @@ BlazeComponent.extendComponent({
         match: /\B@([\w.-]*)$/,
         search(term, callback) {
           const currentBoard = Utils.getCurrentBoard();
+          const activeMembers = currentBoard ? currentBoard.activeMembers() : [];
           callback(
             _.union(
-            currentBoard
-              .activeMembers()
+            activeMembers
               .map(member => {
                 const user = ReactiveCache.getUser(member.userId);
+                if (!user || !user.username) {
+                  return null;
+                }
                 const username = user.username;
                 const fullName = user.profile && user.profile !== undefined && user.profile.fullname ? user.profile.fullname : "";
                 return username.includes(term) || fullName.includes(term) ? user : null;

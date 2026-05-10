@@ -1,13 +1,47 @@
 import DOMPurify from 'dompurify';
 
+function getDOMPurifyInstance() {
+  if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
+    return DOMPurify;
+  }
+
+  if (DOMPurify && DOMPurify.default && typeof DOMPurify.default.sanitize === 'function') {
+    return DOMPurify.default;
+  }
+
+  if (typeof window !== 'undefined' && typeof DOMPurify === 'function') {
+    return DOMPurify(window);
+  }
+
+  if (
+    DOMPurify &&
+    typeof window !== 'undefined' &&
+    DOMPurify.default &&
+    typeof DOMPurify.default === 'function'
+  ) {
+    return DOMPurify.default(window);
+  }
+
+  return null;
+}
+
+function stripHTML(input) {
+  return String(input)
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]*>/g, '');
+}
+
 // Server-side input sanitization to prevent CSS injection and XSS attacks
 export function sanitizeInput(input) {
   if (typeof input !== 'string') {
     return input;
   }
 
+  const purifier = getDOMPurifyInstance();
+
   // Remove any HTML tags and dangerous content
-  const sanitized = DOMPurify.sanitize(input, {
+  const sanitized = purifier ? purifier.sanitize(input, {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
     KEEP_CONTENT: true,
@@ -18,7 +52,7 @@ export function sanitizeInput(input) {
     KEEP_CONTENT: true,
     ADD_ATTR: [],
     ALLOW_DATA_ATTR: false
-  });
+  }) : stripHTML(input);
 
   // Additional check for CSS injection patterns
   const cssInjectionPatterns = [

@@ -1,5 +1,4 @@
-import DOMPurify from 'dompurify';
-import { getSecureDOMPurifyConfig } from './secureDOMPurify';
+import { sanitizeHTML } from './secureDOMPurify';
 
 var Markdown = require('markdown-it')({
   html: true,
@@ -218,12 +217,12 @@ if (Package.ui) {
       // Prevent hiding info: https://wekan.github.io/hall-of-fame/invisiblebleed/
       // If markdown link does not have description, do not render markdown, instead show all of markdown source code using preformatted text.
       // Also show html comments.
-      return HTML.Raw('<pre style="background-color: red;" title="Warning! Hidden markdown link description!" aria-label="Warning! Hidden markdown link description!">' + DOMPurify.sanitize(text.replace('<!--', '&lt;!--').replace('-->', '--&gt;'), getSecureDOMPurifyConfig()) + '</pre>');
+      return HTML.Raw('<pre style="background-color: red;" title="Warning! Hidden markdown link description!" aria-label="Warning! Hidden markdown link description!">' + sanitizeHTML(text.replace('<!--', '&lt;!--').replace('-->', '--&gt;')) + '</pre>');
     } else {
       // Prevent hiding info: https://wekan.github.io/hall-of-fame/invisiblebleed/
       // If text does not have hidden markdown link, render all markdown.
       // Also show html comments.
-      return HTML.Raw(DOMPurify.sanitize(Markdown.render(text).replace('<!--', '<font color="red" title="Warning! Hidden HTML comment!" aria-label="Warning! Hidden HTML comment!">&lt;!--</font>').replace('-->', '<font color="red" title="Warning! Hidden HTML comment!" aria-label="Warning! Hidden HTML comment!">--&gt;</font>'), getSecureDOMPurifyConfig()));
+      return HTML.Raw(sanitizeHTML(Markdown.render(text).replace('<!--', '<font color="red" title="Warning! Hidden HTML comment!" aria-label="Warning! Hidden HTML comment!">&lt;!--</font>').replace('-->', '<font color="red" title="Warning! Hidden HTML comment!" aria-label="Warning! Hidden HTML comment!">--&gt;</font>')));
     }
   }));
 }

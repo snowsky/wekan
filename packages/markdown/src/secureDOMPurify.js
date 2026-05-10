@@ -1,5 +1,37 @@
 import DOMPurify from 'dompurify';
 
+function getDOMPurifyInstance() {
+  if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
+    return DOMPurify;
+  }
+
+  if (DOMPurify && DOMPurify.default && typeof DOMPurify.default.sanitize === 'function') {
+    return DOMPurify.default;
+  }
+
+  if (typeof window !== 'undefined' && typeof DOMPurify === 'function') {
+    return DOMPurify(window);
+  }
+
+  if (
+    DOMPurify &&
+    typeof window !== 'undefined' &&
+    DOMPurify.default &&
+    typeof DOMPurify.default === 'function'
+  ) {
+    return DOMPurify.default(window);
+  }
+
+  return null;
+}
+
+function stripHTML(input) {
+  return String(input)
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]*>/g, '');
+}
+
 // Centralized secure DOMPurify configuration to prevent XSS and CSS injection attacks
 export function getSecureDOMPurifyConfig() {
   return {
@@ -131,12 +163,22 @@ export function getSecureDOMPurifyConfig() {
 
 // Convenience function for secure sanitization
 export function sanitizeHTML(html) {
-  return DOMPurify.sanitize(html, getSecureDOMPurifyConfig());
+  const purifier = getDOMPurifyInstance();
+  if (!purifier) {
+    return stripHTML(html);
+  }
+
+  return purifier.sanitize(html, getSecureDOMPurifyConfig());
 }
 
 // Convenience function for sanitizing text (no HTML)
 export function sanitizeText(text) {
-  return DOMPurify.sanitize(text, {
+  const purifier = getDOMPurifyInstance();
+  if (!purifier) {
+    return stripHTML(text);
+  }
+
+  return purifier.sanitize(text, {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
     KEEP_CONTENT: true

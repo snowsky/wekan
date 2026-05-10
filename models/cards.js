@@ -2724,16 +2724,24 @@ function cardMove(
   oldSwimlaneId,
   oldBoardId,
 ) {
+  if (!doc || !Array.isArray(fieldNames)) return;
+
+  const titleOrId = (record, fallbackId) =>
+    record && record.title !== undefined ? record.title : fallbackId;
+
   if (_.contains(fieldNames, 'boardId') && doc.boardId !== oldBoardId) {
+    const newBoard = ReactiveCache.getBoard(doc.boardId);
+    const oldBoard = ReactiveCache.getBoard(oldBoardId);
+    const swimlane = ReactiveCache.getSwimlane(doc.swimlaneId);
     Activities.insert({
       userId,
       activityType: 'moveCardBoard',
-      boardName: ReactiveCache.getBoard(doc.boardId).title,
+      boardName: titleOrId(newBoard, doc.boardId),
       boardId: doc.boardId,
       oldBoardId,
-      oldBoardName: ReactiveCache.getBoard(oldBoardId).title,
+      oldBoardName: titleOrId(oldBoard, oldBoardId),
       cardId: doc._id,
-      swimlaneName: ReactiveCache.getSwimlane(doc.swimlaneId).title,
+      swimlaneName: titleOrId(swimlane, doc.swimlaneId),
       swimlaneId: doc.swimlaneId,
       oldSwimlaneId,
     });
@@ -2741,16 +2749,18 @@ function cardMove(
     (_.contains(fieldNames, 'listId') && doc.listId !== oldListId) ||
     (_.contains(fieldNames, 'swimlaneId') && doc.swimlaneId !== oldSwimlaneId)
   ) {
+    const list = ReactiveCache.getList(doc.listId);
+    const swimlane = ReactiveCache.getSwimlane(doc.swimlaneId);
     Activities.insert({
       userId,
       oldListId,
       activityType: 'moveCard',
-      listName: ReactiveCache.getList(doc.listId).title,
+      listName: titleOrId(list, doc.listId),
       listId: doc.listId,
       boardId: doc.boardId,
       cardId: doc._id,
       cardTitle: doc.title,
-      swimlaneName: ReactiveCache.getSwimlane(doc.swimlaneId).title,
+      swimlaneName: titleOrId(swimlane, doc.swimlaneId),
       swimlaneId: doc.swimlaneId,
       oldSwimlaneId,
     });
@@ -2759,11 +2769,13 @@ function cardMove(
 
 function cardState(userId, doc, fieldNames) {
   if (_.contains(fieldNames, 'archived')) {
+    const list = ReactiveCache.getList(doc.listId);
+    const listName = list && list.title !== undefined ? list.title : doc.listId;
     if (doc.archived) {
       Activities.insert({
         userId,
         activityType: 'archivedCard',
-        listName: ReactiveCache.getList(doc.listId).title,
+        listName,
         boardId: doc.boardId,
         listId: doc.listId,
         cardId: doc._id,
@@ -2774,7 +2786,7 @@ function cardState(userId, doc, fieldNames) {
         userId,
         activityType: 'restoredCard',
         boardId: doc.boardId,
-        listName: ReactiveCache.getList(doc.listId).title,
+        listName,
         listId: doc.listId,
         cardId: doc._id,
         swimlaneId: doc.swimlaneId,
@@ -3594,6 +3606,8 @@ JsonRoutes.add('GET', '/api/boards/:boardId/cards_count', function(
       const newListId = req.body.newListId;
       let updated = false;
       Authentication.checkBoardAccess(req.userId, paramBoardId);
+      const originalCard =
+        ReactiveCache.getCard(paramCardId) || Cards.findOne(paramCardId);
 
       if (req.body.title) {
         const { sanitizeTitle } = require('../server/lib/inputSanitizer');
@@ -3923,6 +3937,7 @@ JsonRoutes.add('GET', '/api/boards/:boardId/cards_count', function(
       }
       if (req.body.listId) {
         const newParamListId = req.body.listId;
+        const oldParamSwimlaneId = originalCard && originalCard.swimlaneId;
         Cards.direct.update(
           {
             _id: paramCardId,
@@ -3942,10 +3957,10 @@ JsonRoutes.add('GET', '/api/boards/:boardId/cards_count', function(
         cardMove(
           req.body.authorId,
           card,
-          {
-            fieldName: 'listId',
-          },
+          ['listId'],
           paramListId,
+          oldParamSwimlaneId,
+          paramBoardId,
         );
       }
       if (newBoardId && newSwimlaneId && newListId) {
@@ -3972,9 +3987,9 @@ JsonRoutes.add('GET', '/api/boards/:boardId/cards_count', function(
           req.userId,
           card,
           ['boardId', 'swimlaneId', 'listId'],
-          newListId,
-          newSwimlaneId,
-          newBoardId,
+          paramListId,
+          originalCard && originalCard.swimlaneId,
+          paramBoardId,
         );
       }
       if (req.body.archive) {

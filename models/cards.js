@@ -8,7 +8,7 @@ import {
 } from '../config/const';
 import Attachments, { fileStoreStrategyFactory } from "./attachments";
 import { copyFile } from './lib/fileStoreStrategy.js';
-import { sanitizeText } from '/imports/lib/secureDOMPurify';
+import { sanitizeText, sanitizeTitle } from '/imports/lib/secureDOMPurify';
 
 Cards = new Mongo.Collection('cards');
 
@@ -1768,7 +1768,6 @@ Cards.helpers({
     // Sanitize title on client side as well
     let sanitizedTitle = title;
     if (typeof title === 'string') {
-      const { sanitizeTitle } = require('../server/lib/inputSanitizer');
       sanitizedTitle = sanitizeTitle(title);
       if (process.env.DEBUG === 'true' && sanitizedTitle !== title) {
         console.warn('Client-side sanitized card title:', title, '->', sanitizedTitle);
@@ -3610,7 +3609,6 @@ JsonRoutes.add('GET', '/api/boards/:boardId/cards_count', function(
         ReactiveCache.getCard(paramCardId) || Cards.findOne(paramCardId);
 
       if (req.body.title) {
-        const { sanitizeTitle } = require('../server/lib/inputSanitizer');
         const newTitle = sanitizeTitle(req.body.title);
 
         if (process.env.DEBUG === 'true' && newTitle !== req.body.title) {

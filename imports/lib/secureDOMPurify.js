@@ -184,3 +184,23 @@ export function sanitizeText(text) {
     KEEP_CONTENT: true
   });
 }
+
+// Convenience function for sanitizing titles
+export function sanitizeTitle(title) {
+  if (typeof title !== 'string') {
+    return title;
+  }
+
+  let sanitized = sanitizeText(title);
+  sanitized = sanitized.replace(/&[#\w]+;/g, '');
+  sanitized = sanitized.replace(/[<>]/g, '');
+
+  if (sanitized.length > 1000) {
+    sanitized = sanitized.substring(0, 1000);
+    if (process.env.DEBUG === 'true') {
+      console.warn('Truncated long title input:', title.length, 'characters');
+    }
+  }
+
+  return sanitized.trim();
+}

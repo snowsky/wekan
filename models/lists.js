@@ -1,5 +1,6 @@
 import { ReactiveCache } from '/imports/reactiveCache';
 import { ALLOWED_COLORS } from '/config/const';
+import { sanitizeTitle } from '/imports/lib/secureDOMPurify';
 
 Lists = new Mongo.Collection('lists');
 
@@ -314,7 +315,6 @@ Lists.mutations({
   rename(title) {
     // Sanitize title on client side as well
     if (typeof title === 'string') {
-      const { sanitizeTitle } = require('../server/lib/inputSanitizer');
       const sanitizedTitle = sanitizeTitle(title);
       if (process.env.DEBUG === 'true' && sanitizedTitle !== title) {
         console.warn('Client-side sanitized list title:', title, '->', sanitizedTitle);
@@ -651,7 +651,6 @@ if (Meteor.isServer) {
 
       // Update title if provided
       if (req.body.title) {
-        const { sanitizeTitle } = require('../server/lib/inputSanitizer');
         const newTitle = sanitizeTitle(req.body.title);
 
         if (process.env.DEBUG === 'true' && newTitle !== req.body.title) {

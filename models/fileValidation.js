@@ -8,12 +8,13 @@ if (Meteor.isServer) {
   const { exec } = Npm.require('child_process');
   const { promisify } = Npm.require('util');
   asyncExec = promisify(exec);
+  fs = Npm.require('fs');
+  FileType = Npm.require('file-type');
 }
 
 export async function isFileValid(fileObj, mimeTypesAllowed, sizeAllowed, externalCommandLine) {
   let isValid = true;
 
-/*
   if (Meteor.settings.public.ostrioFilesMigrationInProgress !== "true") {
     if (mimeTypesAllowed.length) {
       const mimeTypeResult = await FileType.fromFile(fileObj.path);
@@ -34,11 +35,19 @@ export async function isFileValid(fileObj, mimeTypesAllowed, sizeAllowed, extern
     }
 
     if (isValid && externalCommandLine) {
-      await asyncExec(externalCommandLine.replace("{file}", '"' + fileObj.path + '"'));
-      isValid = fs.existsSync(fileObj.path);
+      try {
+        await asyncExec(externalCommandLine.replace("{file}", '"' + fileObj.path + '"'));
+        isValid = fs.existsSync(fileObj.path);
 
-      if (!isValid) {
-        console.log("Validation of uploaded file failed: file " + fileObj.path + " has been deleted externally");
+        if (!isValid) {
+          console.log("Validation of uploaded file failed: file " + fileObj.path + " has been deleted externally");
+        }
+      } catch (execError) {
+        // Many scanners (e.g. clamscan) exit non-zero when they detect malware,
+        // instead of or in addition to deleting the file. Treat a failing
+        // external command as invalid rather than letting the exception bypass validation.
+        isValid = false;
+        console.log("Validation of uploaded file failed: file " + fileObj.path + " - external command exited with an error: " + execError.message);
       }
     }
 
@@ -46,7 +55,6 @@ export async function isFileValid(fileObj, mimeTypesAllowed, sizeAllowed, extern
       console.debug("Validation of uploaded file successful: file " + fileObj.path);
     }
   }
-*/
 
   return isValid;
 }

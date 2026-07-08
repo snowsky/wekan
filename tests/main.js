@@ -22,6 +22,7 @@ import '/imports/i18n/i18n.test.js';
 if (Meteor.isServer) {
   describe('server', function() {
     import '../server/lib/tests/utils.tests';
+    import '../server/tests/fileValidation.tests';
   });
 }
 

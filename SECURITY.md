@@ -172,6 +172,31 @@ Meteor.startup(() => {
 - https://github.com/wekan/wekan/blob/main/client/components/cards/attachments.js#L303-L312
 - https://wekan.github.io/hall-of-fame/filebleed/
 
+## Attachments: uploaded file validation (MIME type, size, malware scanning)
+
+- After every attachment upload, `Meteor.call('validateAttachmentAndMoveToStorage', ...)` runs
+  `isFileValid()` (`models/fileValidation.js`) before the file is moved to permanent storage. If
+  validation fails, the attachment is removed.
+- `isFileValid()` performs up to three checks, each opt-in via an environment variable:
+  - `ATTACHMENTS_UPLOAD_MIME_TYPES` — comma-separated allowlist (e.g. `image/png,image/jpeg,image/*`).
+    The real MIME type is sniffed from the file's actual bytes (via the `file-type` package), not from
+    the filename extension or the client-supplied `Content-Type`, so renaming an executable to `.png`
+    does not bypass this check.
+  - `ATTACHMENTS_UPLOAD_MAX_SIZE` — maximum allowed size in bytes.
+  - `ATTACHMENTS_UPLOAD_EXTERNAL_PROGRAM` — a shell command template (must contain the literal
+    `{file}` placeholder) run against the uploaded file, e.g. to scan it with an antivirus engine.
+    The file is considered invalid if the command exits with an error, or if it deletes the file.
+    Example using [ClamAV](https://www.clamav.net/)'s `clamscan`:
+    ```
+    ATTACHMENTS_UPLOAD_EXTERNAL_PROGRAM='clamscan --remove {file}'
+    ```
+- None of these checks run while `Meteor.settings.public.ostrioFilesMigrationInProgress` is `"true"`,
+  which is only set during the one-time ostrio-files storage migration
+  (`server/migrations.js`) — normal uploads outside of that migration window are always validated.
+- Validation runs asynchronously after the upload completes, so there is a short window where an
+  invalid file is already stored/downloadable before it is removed.
+- Unit tests: `server/tests/fileValidation.tests.js`.
+
 ## Brute force login protection
 
 - https://github.com/wekan/wekan/commit/23e5e1e3bd081699ce39ce5887db7e612616014d

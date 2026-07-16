@@ -2,12 +2,34 @@ import {addGroupsWithAttributes, addEmail, changeFullname, changeUsername, oauth
 import { assertOidcCodeNotReplayed } from './oidcCodeReplayGuard';
 import { fetch, Headers } from 'meteor/fetch';
 import { URLSearchParams } from 'meteor/url';
+import { Mongo } from 'meteor/mongo';
 import { Buffer } from 'node:buffer';
 import https from 'https';
 import fs from 'fs';
 
 Oidc = {};
 httpCa = false;
+
+// SECURITY (pentest finding, 2026-07): backs assertOidcCodeNotReplayed
+// below. Defined directly in this package (not as an app-level /models
+// collection) because a Meteor package cannot resolve app-level file
+// paths like '/models/...' -- referencing an app global from here (as
+// e.g. Boards/Users appear to be, elsewhere in this file, behind an
+// `if (!defaultBoardId) return` guard that's rarely reached) throws
+// ReferenceError at runtime; it only looked like it worked because that
+// path was never actually exercised.
+const OidcConsumedCodes = new Mongo.Collection('oidc_consumed_codes');
+
+Meteor.startup(async () => {
+  try {
+    await OidcConsumedCodes.rawCollection().createIndex(
+      { createdAt: 1 },
+      { expireAfterSeconds: 15 * 60 },
+    );
+  } catch (err) {
+    console.error('wekan-oidc: failed to ensure TTL index on oidc_consumed_codes:', err);
+  }
+});
 
 if (process.env.OAUTH2_CA_CERT !== undefined) {
     try {

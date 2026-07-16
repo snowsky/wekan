@@ -10,6 +10,7 @@ Package.onUse(function(api) {
   api.use('oauth2', ['client', 'server']);
   api.use('oauth', ['client', 'server']);
   api.use('fetch', ['server']);
+  api.use('mongo', 'server');
   api.use('ecmascript');
   api.use('templating', 'client');
   api.use('random', 'client');

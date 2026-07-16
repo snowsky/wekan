@@ -186,15 +186,17 @@ if [ -d npm/node_modules/meteor/accounts-password ]; then
   cd npm/node_modules/meteor/accounts-password
   gosu wekan meteor npm remove bcrypt
   gosu wekan meteor npm install bcrypt --production
-  # accounts-password also depends on argon2 (native module, alongside
-  # bcrypt) in this Meteor version. Same reason as bcrypt: reinstall it
-  # here so its native binary is actually built/fetched for the target
-  # platform, instead of whatever `meteor npm install --production` above
-  # left (or skipped) for it.
-  if grep -q '"argon2"' package.json 2>/dev/null; then
-    gosu wekan meteor npm remove argon2
-    gosu wekan meteor npm install argon2 --production
-  fi
+  # accounts-password@3.3.0 (the version this repo's .meteor/versions
+  # pins) also declares Npm.depends({ argon2: "0.41.1", ... }) alongside
+  # bcrypt -- see meteor/meteor packages/accounts-password/package.js at
+  # tag release/METEOR@3.5. Unlike bcrypt, `meteor npm install
+  # --production` above never actually resolves it at all (confirmed:
+  # `grep argon2 package.json` here finds nothing after that install), not
+  # just a native-rebuild issue a reinstall alone would fix, so gating on
+  # its presence in package.json first (as an earlier version of this
+  # Dockerfile did) never ran. Install it directly, unconditionally, at
+  # the exact version accounts-password expects.
+  gosu wekan meteor npm install argon2@0.41.1 --production
 fi
 
 cd /home/wekan/app/.build/bundle

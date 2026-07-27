@@ -169,6 +169,7 @@ import '/server/lib/emailLocalization';
 import '/server/lib/importer';
 import '/server/lib/inputSanitizer';
 import '/server/lib/ssrfGuard';
+import '/server/lib/ddpSessionSendGuard';
 import '/server/lib/utils';
 
 // ----------------------------------------------------------------------------
